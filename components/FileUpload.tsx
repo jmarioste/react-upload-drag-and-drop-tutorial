@@ -2,6 +2,7 @@
 import React, { useRef, useState } from "react";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import classNames from "classnames";
+import axios from "axios";
 const FileUpload = () => {
   const [fileList, setFileList] = useState<File[] | null>(null);
   const [shouldHighlight, setShouldHighlight] = useState(false);
@@ -9,6 +10,16 @@ const FileUpload = () => {
   const preventDefaultHandler = (e: React.DragEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
+  };
+
+  const handleUpload = async () => {
+    // const UPLOAD_URL = "YOUR URL HERE";
+    const UPLOAD_URL = "/api/upload";
+    const data = new FormData();
+    for (let file of fileList!) {
+      data.append(file.name, file);
+    }
+    await axios.post(UPLOAD_URL, data);
   };
   return (
     <div
@@ -55,7 +66,12 @@ const FileUpload = () => {
               return <span key={i}>{file.name}</span>;
             })}
             <div className="flex gap-2 mt-2">
-              <button className="bg-violet-500 text-violet-50 px-2 py-1 rounded-md">
+              <button
+                className="bg-violet-500 text-violet-50 px-2 py-1 rounded-md"
+                onClick={() => {
+                  handleUpload();
+                }}
+              >
                 Upload
               </button>
               <button
