@@ -1,10 +1,15 @@
+"use client";
 import React, { useRef, useState } from "react";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 import classNames from "classnames";
 const FileUpload = () => {
-  const [fileList, setFileList] = useState<FileList | null>(null);
+  const [fileList, setFileList] = useState<File[] | null>(null);
   const [shouldHighlight, setShouldHighlight] = useState(false);
 
+  const preventDefaultHandler = (e: React.DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
   return (
     <div
       className={classNames({
@@ -17,34 +22,53 @@ const FileUpload = () => {
         "border-violet-100 bg-violet-50": !shouldHighlight,
       })}
       onDragOver={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        preventDefaultHandler(e);
+        setShouldHighlight(true);
+      }}
+      onDragEnter={(e) => {
+        preventDefaultHandler(e);
         setShouldHighlight(true);
       }}
       onDragLeave={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        preventDefaultHandler(e);
         setShouldHighlight(false);
       }}
-      onDragEnter={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setShouldHighlight(true);
-      }}
       onDrop={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const files = e.dataTransfer.files;
-        console.log(files);
+        preventDefaultHandler(e);
+        const files = Array.from(e.dataTransfer.files);
         setFileList(files);
         setShouldHighlight(false);
       }}
     >
       <div className="flex flex-col items-center">
-        <CloudArrowUpIcon className="w-10 h-10" />
-        <span>
-          <span>Choose a File</span> or drag it here
-        </span>
+        {!fileList ? (
+          <>
+            <CloudArrowUpIcon className="w-10 h-10" />
+            <span>
+              <span>Choose a File</span> or drag it here
+            </span>
+          </>
+        ) : (
+          <>
+            <p>Files to Upload</p>
+            {fileList.map((file, i) => {
+              return <span key={i}>{file.name}</span>;
+            })}
+            <div className="flex gap-2 mt-2">
+              <button className="bg-violet-500 text-violet-50 px-2 py-1 rounded-md">
+                Upload
+              </button>
+              <button
+                className="border border-violet-500 px-2 py-1 rounded-md"
+                onClick={() => {
+                  setFileList(null);
+                }}
+              >
+                Clear
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
